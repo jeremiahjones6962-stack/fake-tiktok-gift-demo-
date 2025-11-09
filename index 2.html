@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Coin Demo — Joke / Demo Only</title>
+<style>
+  :root{
+    --bg:#f7f7f8;
+    --card:#ffffff;
+    --muted:#9b9b9b;
+    --accent:#ff477a;
+    --pill:#f3f3f4;
+    --shadow: 0 6px 18px rgba(0,0,0,0.06);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  body{ margin:0; background:var(--bg); -webkit-font-smoothing:antialiased; }
+  .topbar{ height:64px; display:flex; align-items:center; justify-content:center; position:sticky; top:0; background:var(--bg); border-bottom:1px solid #eee; }
+  .title{ font-weight:700; }
+  .container{ max-width:420px; margin:18px auto; padding:16px; }
+  .banner{ background:#fff6f8; color:#7a0736; padding:10px 12px; border-radius:10px; font-weight:600; box-shadow:var(--shadow); margin-bottom:12px; text-align:center; }
+  .profile{ display:flex; gap:12px; align-items:center; background:var(--card); padding:14px; border-radius:12px; box-shadow:var(--shadow); }
+  .avatar{ width:56px; height:56px; border-radius:50%; background:#111; }
+  .meta{ flex:1; }
+  .handle{ font-weight:700; }
+  .coins{ color:var(--muted); margin-top:6px; display:flex; gap:8px; align-items:center; font-size:14px; }
+  .recharge{ margin-top:14px; background:var(--card); padding:14px; border-radius:12px; box-shadow:var(--shadow); }
+  .hint{ color:#e03b6a; font-weight:600; margin-bottom:10px; }
+  .grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .option{ background:var(--pill); padding:12px; border-radius:10px; text-align:center; cursor:pointer; border:2px solid transparent; user-select:none; }
+  .option.selected{ background:linear-gradient(180deg,#fff 0%, #fff 60%); border-color:#ffd4df; box-shadow:0 4px 12px rgba(255,71,122,0.08); }
+  .amount{ font-weight:700; font-size:18px; }
+  .price{ color:var(--muted); font-size:13px; margin-top:6px; }
+  .buybar{ margin-top:16px; display:flex; align-items:center; gap:12px; justify-content:center; }
+  .buybtn{ background:var(--accent); color:white; border:none; padding:12px 20px; border-radius:999px; font-weight:700; cursor:pointer; box-shadow:0 8px 18px rgba(255,71,122,0.18); }
+  .disclaimer{ font-size:13px; color:var(--muted); text-align:center; margin-top:10px; }
+  .sendbtn{ margin-top:12px; background:#0a84ff; color:white; border:none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; width:100%; }
+  .footerbar{ height:72px; }
+  /* small animations */
+  .coins-fly{ position:absolute; pointer-events:none; transform:translateY(0); animation:flyUp 900ms ease forwards; }
+  @keyframes flyUp{ 0%{ transform:translateY(0) scale(1); opacity:1 } 100%{ transform:translateY(-120px) scale(.6); opacity:0 } }
+  /* responsive */
+  @media (max-width:420px){
+    .container{ padding:12px; }
+    .grid{ grid-template-columns:repeat(3,1fr); gap:8px; }
+  }
+</style>
+</head>
+<body>
+  <div class="topbar"><div class="title">Get Coins — Demo</div></div>
+  <div class="container">
+    <div class="banner">⚠️ DEMO / JOKE — This page does NOT send real coins. Do not enter payment info.</div>
+
+    <div class="profile">
+      <div class="avatar" id="avatar"></div>
+      <div class="meta">
+        <div class="handle" id="handle">hardestedits5 (demo)</div>
+        <div class="coins"><span id="balance">59</span> demo coins • <small style="color:var(--muted)">ID: YTJ9TWVP</small></div>
+      </div>
+    </div>
+
+    <div class="recharge">
+      <div class="hint">Save around 25% with a lower third-party service fee. (demo text)</div>
+      <div class="grid" id="grid">
+        <div class="option selected" data-coins="30" data-price="0.31"><div class="amount">30</div><div class="price">$0.31</div></div>
+        <div class="option" data-coins="50" data-price="0.52"><div class="amount">50</div><div class="price">$0.52</div></div>
+        <div class="option" data-coins="70" data-price="0.73"><div class="amount">70</div><div class="price">$0.73</div></div>
+        <div class="option" data-coins="100" data-price="1.05"><div class="amount">100</div><div class="price">$1.05</div></div>
+        <div class="option" data-coins="150" data-price="1.59"><div class="amount">150</div><div class="price">$1.59</div></div>
+        <div class="option" id="custom"><div class="amount">Custom</div><div class="price">&nbsp;</div></div>
+      </div>
+
+      <div class="buybar">
+        <div style="text-align:center">
+          <div style="font-size:13px;color:var(--muted);">Special offer</div>
+          <div style="font-weight:800;color:#222;font-size:16px" id="selectedPrice">$0.31</div>
+        </div>
+        <button class="buybtn" id="buyBtn">Buy for $0.31</button>
+      </div>
+
+      <div class="disclaimer">This is a mockup for fun — no payments, no real TikTok coins, no impersonation.</div>
+
+      <button class="sendbtn" id="sendBtn">Send demo coin to someone (joke)</button>
+    </div>
+
+    <div style="height:14px"></div>
+    <div style="font-size:12px;color:var(--muted);text-align:center">Made for laughs — do not use for real transactions.</div>
+  </div>
+
+  <div class="footerbar"></div>
+
+<script>
+  // basic interaction: select options, update price, show playful alerts
+  const options = document.querySelectorAll('.option');
+  const priceEl = document.getElementById('selectedPrice');
+  const buyBtn = document.getElementById('buyBtn');
+  const grid = document.getElementById('grid');
+  const balanceEl = document.getElementById('balance');
+
+  function selectOption(el){
+    options.forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    const p = el.getAttribute('data-price') || '$0.00';
+    const coins = el.getAttribute('data-coins') || '—';
+    priceEl.textContent = p;
+    buyBtn.textContent = `Buy for ${p}`;
+    buyBtn.dataset.coins = coins;
+  }
+
+  options.forEach(opt => {
+    opt.addEventListener('click', () => {
+      if(opt.id === 'custom'){
+        const custom = prompt('Enter number of demo coins (e.g. 25):','25');
+        if(custom){
+          opt.setAttribute('data-coins', custom);
+          opt.setAttribute('data-price', '$0.00');
+          opt.querySelector('.amount').textContent = custom;
+          selectOption(opt);
+        }
+      } else selectOption(opt);
+    })
+  });
+
+  buyBtn.addEventListener('click', () => {
+    // playful confirmation and coin animation
+    const coins = buyBtn.dataset.coins || '30';
+    showFlyingCoin();
+    setTimeout(()=> alert(`Demo: you've "bought" ${coins} demo coins.\n(Again: this is NOT real — no payment was processed.)`), 350);
+  });
+
+  // Send button simulates sending a coin to another user as a joke
+  document.getElementById('sendBtn').addEventListener('click', ()=>{
+    const who = prompt('Who do you want to send a demo coin to? (username)','friend_demo');
+    if(!who) return;
+    animateSend(who);
+  });
+
+  function showFlyingCoin(){
+    const c = document.createElement('div');
+    c.className = 'coins-fly';
+    c.textContent = '🪙';
+    Object.assign(c.style,{ left: (window.innerWidth/2 - 20) + 'px', top: (window.innerHeight/2) + 'px', fontSize:'28px' });
+    document.body.appendChild(c);
+    setTimeout(()=> c.remove(),1000);
+  }
+
+  function animateSend(who){
+    // decrease demo balance, show animation, then alert
+    let bal = parseInt(balanceEl.textContent,10) || 0;
+    if(bal>0) bal -= 1;
+    balanceEl.textContent = bal;
+    // show a sequence of coin emojis then confirm
+    const container = document.createElement('div');
+    container.style.position='fixed';
+    container.style.left='50%';
+    container.style.top='30%';
+    container.style.transform='translateX(-50%)';
+    container.style.fontSize='24px';
+    container.style.padding='12px 18px';
+    container.style.borderRadius='12px';
+    container.style.boxShadow='0 10px 30px rgba(0,0,0,0.12)';
+    container.style.background='white';
+    container.textContent = `Sending demo coin to ${who}... 🪙`;
+    document.body.appendChild(container);
+    setTimeout(()=> {
+      container.textContent = `Delivered! ${who} got 1 demo coin. 😂 (Not real)`;
+      setTimeout(()=> container.remove(),1500);
+    },900);
+  }
+
+  // initial select
+  selectOption(document.querySelector('.option.selected'));
+</script>
+</body>
+</html>
